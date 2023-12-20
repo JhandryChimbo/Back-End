@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "jay",
+    "password": "UzUmYm-W53",
+    "database": "animeListDB",
+    "dialect": "mysql",
+    "host": "127.0.0.1",
+    "operatorAliases": false
+  },
+
+  "staging": {
+    "username": "staging_jay",
+    "password": "UzUmYm-W53",
+    "database": "animeListDBxd",
+    "dialect": "mysql",
+    "operatorAliases": false
+  },
+
+  "production": {
+    "username": "production_Jay",
+    "password": "UzUmYm-W53",
+    "database": "animeListDBxd",
+    "dialect": "mysql",
+    "operatorAliases": false
+  }
+}
