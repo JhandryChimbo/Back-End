@@ -22,11 +22,11 @@ class CuentaControl {
         res.status(400);
         res.json({ msg: "ERROR", tag: "Cuenta no existe", code: 400 });
       } else {
-        if (cuentaA.estado === true) {
+        if (cuentaA.estado == true) {
           if (cuentaA.clave === req.body.clave) {
             //TODO mandar rol
             const token_data = {
-              external: cuentaA.externa_id,
+              external: cuentaA.external_id,
               check: true,
             };
             require("dotenv").config();

@@ -22,7 +22,10 @@ router.get("/", function (req, res, next) {
 
 //middleware
 const auth = function middleware(req, res, next) {
-  const token = req.headers["animes-token"];
+  const token = req.headers["puta-key"];
+
+  console.log(req.headers);
+
   if (token === undefined) {
     res.status(401);
     res.json({
@@ -45,10 +48,10 @@ const auth = function middleware(req, res, next) {
         console.log(decoded.external);
         const models = require("../app/models");
         const cuenta = models.cuenta;
-        const aux = cuenta.findOne({
+        const aux = await cuenta.findOne({
           where: { external_id: decoded.external },
         });
-        if ((aux === null)) {
+        if (aux === null) {
           res.status(401);
           res.json({
             msg: "ERROR",
@@ -56,10 +59,10 @@ const auth = function middleware(req, res, next) {
             code: 401,
           });
         } else {
-          //TODO Autorizacion 
+          //TODO Autorizacion
           next();
         }
-        next();
+
       }
     });
   }
