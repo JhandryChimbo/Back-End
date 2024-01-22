@@ -86,7 +86,7 @@ class AnimeControl {
         res.status(401);
         res.json({
           msg: "ERROR",
-          tag: "El editor a buscar no existe",
+          tag: "El admin a buscar no existe",
           code: 401,
         });
       } else {
@@ -100,7 +100,7 @@ class AnimeControl {
           estado: false,
           archivo: "anime.png",
         };
-        if (perA.rol.nombre == "editor") {
+        if (perA.rol.nombre == "admin") {
           var result = await anime.create(data);
           if (result === null) {
             res.status(401);
@@ -115,7 +115,7 @@ class AnimeControl {
           res.status(400);
           res.json({
             msg: "ERROR",
-            tag: "La persona no es un editor",
+            tag: "La persona no es un admin",
             code: 400,
           });
         }
@@ -276,7 +276,7 @@ class AnimeControl {
         res.status(401);
         res.json({
           msg: "ERROR",
-          tag: "El editor a buscar no existe",
+          tag: "El admin a buscar no existe",
           code: 401,
         });
       } else {

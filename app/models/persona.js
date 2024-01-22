@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     persona.hasOne(models.cuenta, { foreignKey: "id_persona", as: "cuenta" });
     persona.belongsTo(models.rol, { foreignKey: "id_rol" });
     persona.hasMany(models.anime, { foreignKey: "id_persona", as: "anime"});
+    persona.hasMany(models.comentario, { foreignKey: "id_persona", as: "comentario"});
   };
   return persona;
 };

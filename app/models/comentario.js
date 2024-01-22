@@ -7,12 +7,15 @@ module.exports = (sequelize, DataTypes) => {
       cuerpo: { type: DataTypes.TEXT, defaultValue: "NONE" },
       estado: { type: DataTypes.BOOLEAN },
       fecha: { type: DataTypes.DATE },
+      longitud: {type: DataTypes.FLOAT},
+      latitud: {type: DataTypes.FLOAT},
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     },
     { freezeTableName: true }
   );
   comentario.associate = function (models) { 
     comentario.belongsTo(models.anime, { foreignKey: "id_anime" });
+    comentario.belongsTo(models.persona, { foreignKey: "id_persona" });
   };
   return comentario;
 };

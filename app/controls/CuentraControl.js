@@ -42,7 +42,7 @@ class CuentaControl {
             res.json({
               msg: "OK",
               tag: "Listo :)",
-              data: info,
+              datos: info,
               code: 200,
             });
           } else {
