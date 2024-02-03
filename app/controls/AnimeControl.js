@@ -57,14 +57,12 @@ class AnimeControl {
       ],
     });
     if (lista === undefined || lista == null) {
-      res.status(200);
-      res.json({ msg: "OK", code: 200, datos: {} });
+      res.status(404);
+      res.json({ msg: "Error", tag:"Anime no encontrado",code: 404, datos: {} });
     } else {
       res.status(200);
       res.json({ msg: "OK", code: 200, datos: lista });
     }
-    res.status(200);
-    res.json({ msg: "OK", code: 200, datos: lista });
   }
 
   async guardar(req, res) {
@@ -81,7 +79,6 @@ class AnimeControl {
         include: [{ model: models.rol, as: "rol", attributes: ["nombre"] }],
       });
 
-      //TODO VALIDAR EL TAMANIO, TIPO DE DATO, ETC
       if (perA == undefined || perA == null) {
         res.status(401);
         res.json({
@@ -97,7 +94,7 @@ class AnimeControl {
           fecha: req.body.fecha,
           tipo_anime: req.body.tipo_anime,
           id_persona: perA.id,
-          estado: false,
+          estado: true,
           archivo: "anime.png",
         };
         if (perA.rol.nombre == "admin") {
@@ -106,8 +103,6 @@ class AnimeControl {
             res.status(401);
             res.json({ msg: "OKdnt", tag: "no se puede crear", code: 401 });
           } else {
-            perA.external_id = uuid.v4();
-            await perA.save();
             res.status(200);
             res.json({ msg: "OK", code: 200 });
           }
@@ -128,7 +123,7 @@ class AnimeControl {
 
   //GUARDAR FOTO
   async guardarFoto(req, res) {
-    const external = req.params.externalA;
+    const external = req.params.external;
 
     if (!external) {
       res.status(400);
@@ -137,13 +132,13 @@ class AnimeControl {
         tag: "Falta el anime a modificar, por favor ingresar su id",
         code: 400,
       });
+      return;
     }
 
     var form = new formidable.IncomingForm(),
       files = [];
     form
       .on("file", function (field, file) {
-        //Siempre enviar este dato como file en el formulario, si es archivo, acá también será archivo inputFile
         files.push(file);
       })
       .on("end", function () {
@@ -152,13 +147,12 @@ class AnimeControl {
 
     form.parse(req, async function (err, fields) {
       let listado = files;
-      let externalAnimeName = fields.external[0];
+      let externalAnimeName = fields.nameImage[0];
 
       let animeModificar = await anime.findOne({
         where: { external_id: external },
       });
 
-      // Verificar si el anime existe
       if (!animeModificar) {
         res.status(404);
         res.json({ msg: "ERROR", tag: "Anime no encontrado", code: 404 });
@@ -167,11 +161,8 @@ class AnimeControl {
 
       for (let index = 0; index < listado.length; index++) {
         var file = listado[index];
-        //validación del tamaño y tipo de archivo
-        var extension = file.originalFilename.split(".").pop().toLowerCase(); //Sacar el nombre original del archivo (archivo.png), separa en puntos y los pone en pilas. Saca la primera posición que sería el formato del archivo
-        //console.log(file);
+        var extension = file.originalFilename.split(".").pop().toLowerCase();
 
-        //validar tamanio
         if (file.size > maxTamanio) {
           res.status(400);
           return res.json({
@@ -184,8 +175,6 @@ class AnimeControl {
         let extensionesAceptadas = [];
         if (esImagen(extension)) {
           extensionesAceptadas = extensionesImagen;
-        } else if (esVideo(extension)) {
-          extensionesAceptadas = extensionesVideo;
         } else {
           res.status(400);
           return res.json({
@@ -203,26 +192,47 @@ class AnimeControl {
             code: 200,
           });
         } else {
-          const name = externalAnimeName + "." + extension; //Dándole al archivo un nombre específico
-          console.log(extension);
+          const existingImages = animeModificar.archivo
+            ? animeModificar.archivo.split(",")
+            : [];
+
+          const defaultImageIndex = existingImages.indexOf("anime.png");
+          if (defaultImageIndex !== -1) {
+            existingImages.splice(defaultImageIndex, 1);
+          }
+
+          let counter = 1;
+          let name;
+          do {
+            name = `${externalAnimeName}_${index + counter}.${extension}`;
+            counter++;
+          } while (existingImages.includes(name));
+
+          // Verificar el límite de 3 imágenes
+          if (existingImages.length >= 3) {
+            res.status(400);
+            res.json({
+              msg: "ERROR",
+              tag: "Se ha alcanzado el límite máximo de 3 imágenes por anime.",
+              code: 400,
+            });
+            return;
+          }
+
           fs.rename(
             file.filepath,
-            "public/multimedia/" + name,
+            "public/images/" + name,
             async function (err) {
-              //guardar el archivo en la carpeta
-              if (err) {
-                res.status(200);
-                res.json({
-                  msg: "Error",
-                  tag: "No se pudo guardar el archivo",
-                  code: 200,
-                });
-              } else {
-                animeModificar.archivo = name;
-                await animeModificar.save();
-                res.status(200);
-                res.json({ msg: "OK", tag: "Archivo guardado", code: 200 });
-              }
+              existingImages.push(name);
+
+              animeModificar.archivo =
+                existingImages.length > 0
+                  ? existingImages.join(",")
+                  : "anime.png";
+
+              await animeModificar.save();
+              res.status(200);
+              res.json({ msg: "OK", tag: "Archivo guardado", code: 200 });
             }
           );
         }

@@ -115,8 +115,9 @@ router.get("/animes", animeControl.listar);
 router.get("/animes/get/:external", animeControl.obtener);
 router.post("/admin/animes/save", animeControl.guardar);
 router.put("/admin/animes/modificar/:external", animeControl.modificar);
+router.use("/images", express.static("public/images"));
 //router.post("/admin/animes/file/save", animeControl.guardarFoto);
-router.put("/admin/animes/file/save/:externalA", animeControl.guardarFoto);
+router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 //API DE COMENTARIO
 router.get("/comentarios", comentarioControl.listar);
 router.get("/comentarios/get/:external", comentarioControl.obtener);

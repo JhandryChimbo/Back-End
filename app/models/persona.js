@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       nombres: { type: DataTypes.STRING(150), defaultValue: "NONE" },
       direccion: { type: DataTypes.STRING, defaultValue: "NONE" },
       celular: { type: DataTypes.STRING(20), defaultValue: "NONE" },
-      fecha_nacimiento: { type: DataTypes.DATEONLY },
+      fecha_nacimiento: DataTypes.DATEONLY ,
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     },
     { freezeTableName: true }

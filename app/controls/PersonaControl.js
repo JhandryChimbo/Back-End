@@ -41,8 +41,8 @@ class PersonaControl {
       ],
     });
     if (lista === undefined || lista == null) {
-      res.status(200);
-      res.json({ msg: "OK", code: 200, datos: {} });
+      res.status(404);
+      res.json({ msg: "Error", tag:"Usuario no encontrado",code: 404, datos: {} });
     } else {
       res.status(200);
       res.json({ msg: "OK", code: 200, datos: lista });
@@ -65,7 +65,7 @@ class PersonaControl {
       var correoA = await cuenta.findOne({
         where: { correo: req.body.correo },
       });
-  
+
       // Validar correo
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(req.body.correo)) {
@@ -77,7 +77,7 @@ class PersonaControl {
         });
         return;
       }
-  
+
       // Validar formato de fecha (mm-dd-aaaa)
       const dateRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-\d{4}$/;
       if (!dateRegex.test(req.body.fecha)) {
@@ -89,9 +89,10 @@ class PersonaControl {
         });
         return;
       }
-  
+
       if (correoA === null) {
-        if (rolA !== null) {  // Cambiado de `!=` a `!==`
+        if (rolA !== null) {
+          // Cambiado de `!=` a `!==`
           var data = {
             nombres: req.body.nombres,
             external_id: uuid.v4(),
@@ -147,24 +148,23 @@ class PersonaControl {
       res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
     }
   }
-  
 
   async guardarUsuario(req, res) {
     if (
       req.body.hasOwnProperty("nombres") &&
       req.body.hasOwnProperty("apellidos") &&
-      req.body.hasOwnProperty("direccion") &&
-      req.body.hasOwnProperty("celular") &&
+      // req.body.hasOwnProperty("direccion") &&
+      // req.body.hasOwnProperty("celular") &&
       req.body.hasOwnProperty("correo") &&
-      req.body.hasOwnProperty("clave") &&
-      req.body.hasOwnProperty("fecha")
+      req.body.hasOwnProperty("clave")
+      // req.body.hasOwnProperty("fecha")
     ) {
       var uuid = require("uuid");
       var rolA = await rol.findOne({ where: { nombre: "usuario" } });
       var correoA = await cuenta.findOne({
         where: { correo: req.body.correo },
       });
-  
+
       // Validar correo
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(req.body.correo)) {
@@ -176,28 +176,40 @@ class PersonaControl {
         });
         return;
       }
-  
-      // Validar formato de fecha (mm-dd-aaaa)
-      const dateRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-\d{4}$/;
-      if (!dateRegex.test(req.body.fecha)) {
-        res.status(400);
-        res.json({
-          msg: "ERROR",
-          tag: "El formato de fecha no es válido 'mm-dd-aaaa'",
-          code: 400,
-        });
-        return;
-      }
-  
+
+      // // Validar formato de fecha (mm-dd-aaaa)
+      // const dateRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-\d{4}$/;
+      // if (!dateRegex.test(req.body.fecha)) {
+      //   res.status(400);
+      //   res.json({
+      //     msg: "ERROR",
+      //     tag: "El formato de fecha no es válido 'mm-dd-aaaa'",
+      //     code: 400,
+      //   });
+      //   return;
+      // }
+
+      // // Validar formato de número de celular de Ecuador (0980657855)
+      // const phoneRegex = /^09\d{8}$/;
+      // if (!phoneRegex.test(req.body.celular)) {
+      //   res.status(400);
+      //   res.json({
+      //     msg: "ERROR",
+      //     tag: "El número de celular ingresado no tiene un formato válido para Ecuador",
+      //     code: 400,
+      //   });
+      //   return;
+      // }
+
       if (correoA === null) {
         var data = {
           nombres: req.body.nombres,
           external_id: uuid.v4(),
           apellidos: req.body.apellidos,
-          celular: req.body.celular,
-          fecha_nacimiento: req.body.fecha,
+          // celular: req.body.celular,
+          // fecha_nacimiento: req.body.fecha,
           id_rol: rolA.id,
-          direccion: req.body.direccion,
+          // direccion: req.body.direccion,
           cuenta: {
             correo: req.body.correo,
             clave: req.body.clave,
@@ -217,7 +229,7 @@ class PersonaControl {
             rolA.external_id = uuid.v4();
             await rolA.save();
             res.status(200);
-            res.json({ msg: "OK", code: 200 });
+            res.json({ msg: "OK", tag: "Cuenta Creada Correctamente", code: 200 });
           }
         } catch (error) {
           if (transaction) await transaction.rollback();
@@ -237,7 +249,6 @@ class PersonaControl {
       res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
     }
   }
-  
 
   async modificar(req, res) {
     // Obtener la persona a modificar
