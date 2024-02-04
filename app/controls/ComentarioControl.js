@@ -59,7 +59,12 @@ class ComentarioControl {
     });
     if (lista === undefined || lista == null) {
       res.status(404);
-      res.json({ msg: "Error", tag:"Comentario no encontrado",code: 404, datos: {} });
+      res.json({
+        msg: "Error",
+        tag: "Comentario no encontrado",
+        code: 404,
+        datos: {},
+      });
     } else {
       res.status(200);
       res.json({ msg: "OK", code: 200, datos: lista });
@@ -105,8 +110,8 @@ class ComentarioControl {
           longitud: req.body.longitud,
           latitud: req.body.latitud,
           id_persona: perA.id,
-          id_anime: perA.id,
-          estado: false,
+          id_anime: animeA.id,
+          estado: true,
         };
         if (perA.rol.nombre == "admin") {
           var result = await comentario.create(data);
@@ -114,8 +119,6 @@ class ComentarioControl {
             res.status(401);
             res.json({ msg: "OKdnt", tag: "no se puede crear", code: 401 });
           } else {
-            perA.external_id = uuid.v4();
-            await perA.save();
             res.status(200);
             res.json({ msg: "OK", code: 200 });
           }
@@ -192,11 +195,11 @@ class ComentarioControl {
       } else {
         // Actualizar los campos si se proporcionan en la solicitud
         if (
-            req.body.hasOwnProperty("cuerpo") &&
-            req.body.hasOwnProperty("fecha") &&
-            req.body.hasOwnProperty("longitud") &&
-            req.body.hasOwnProperty("latitud") &&
-            req.body.hasOwnProperty("estado")
+          req.body.hasOwnProperty("cuerpo") &&
+          req.body.hasOwnProperty("fecha") &&
+          req.body.hasOwnProperty("longitud") &&
+          req.body.hasOwnProperty("latitud") &&
+          req.body.hasOwnProperty("estado")
         ) {
           comentarioModificar.cuerpo = req.body.cuerpo;
           comentarioModificar.fecha = req.body.fecha;
@@ -225,6 +228,5 @@ class ComentarioControl {
     }
   }
 }
-
 
 module.exports = ComentarioControl;

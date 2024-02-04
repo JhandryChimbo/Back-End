@@ -14,7 +14,7 @@ class CuentaControl {
           {
             model: models.persona,
             as: "persona",
-            attributes: ["apellidos", "nombres"],
+            attributes: ["apellidos", "nombres", "external_id"],
           },
         ],
       });
@@ -37,6 +37,7 @@ class CuentaControl {
             var info = {
               token: token,
               user: cuentaA.persona.apellidos + " " + cuentaA.persona.nombres,
+              id: cuentaA.persona.external_id,
             };
             res.status(200);
             res.json({

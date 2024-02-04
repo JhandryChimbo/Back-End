@@ -121,7 +121,7 @@ router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 //API DE COMENTARIO
 router.get("/comentarios", comentarioControl.listar);
 router.get("/comentarios/get/:external", comentarioControl.obtener);
-router.post("/admin/comentarios/save", comentarioControl.guardar);
+router.post("/comentarios/save", comentarioControl.guardar);
 router.put("/admin/comentarios/modificar/:external", comentarioControl.modificar);
 
 module.exports = router;

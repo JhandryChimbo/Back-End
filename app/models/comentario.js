@@ -7,8 +7,8 @@ module.exports = (sequelize, DataTypes) => {
       cuerpo: { type: DataTypes.TEXT, defaultValue: "NONE" },
       estado: { type: DataTypes.BOOLEAN },
       fecha: { type: DataTypes.DATE },
-      longitud: {type: DataTypes.FLOAT},
-      latitud: {type: DataTypes.FLOAT},
+      longitud: {type: DataTypes.DOUBLE},
+      latitud: {type: DataTypes.DOUBLE},
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     },
     { freezeTableName: true }
