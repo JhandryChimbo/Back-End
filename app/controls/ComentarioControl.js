@@ -1,7 +1,5 @@
 "use strict";
 
-var formidable = require("formidable");
-var fs = require("fs");
 var models = require("../models");
 var persona = models.persona;
 var anime = models.anime;
@@ -14,7 +12,7 @@ class ComentarioControl {
         {
           model: models.anime,
           as: "anime",
-          attributes: ["titulo", "fecha"],
+          attributes: ["titulo", "fecha", ["external_id", "id"]],
         },
         {
           model: models.persona,
@@ -46,14 +44,19 @@ class ComentarioControl {
           attributes: ["apellidos", "nombres"],
         },
       ],
+      include: [
+        {
+          model: models.anime,
+          as: "anime",
+          attributes: ["titulo", "fecha"],
+        },
+      ],
       attributes: [
-        "titulo",
         ["external_id", "id"],
         "cuerpo",
-        "tipo_archivo",
-        "tipo_anime",
+        "longitud",
+        "latitud",
         "fecha",
-        "archivo",
         "estado",
       ],
     });
@@ -83,24 +86,18 @@ class ComentarioControl {
       var uuid = require("uuid");
       var perA = await persona.findOne({
         where: { external_id: req.body.persona },
-        include: [{ model: models.rol, as: "rol", attributes: ["nombre"] }],
       });
 
       var animeA = await anime.findOne({
         where: { external_id: req.body.anime },
       });
 
-      if (
-        perA == undefined ||
-        perA == null ||
-        animeA == undefined ||
-        animeA == null
-      ) {
-        res.status(401);
+      if (animeA == undefined || animeA == null) {
+        res.status(404);
         res.json({
           msg: "ERROR",
-          tag: "El admin o anime a buscar no existe",
-          code: 401,
+          tag: "El anime a buscar no existe",
+          code: 404,
         });
       } else {
         var data = {
@@ -113,22 +110,13 @@ class ComentarioControl {
           id_anime: animeA.id,
           estado: true,
         };
-        if (perA.rol.nombre == "admin") {
-          var result = await comentario.create(data);
-          if (result === null) {
-            res.status(401);
-            res.json({ msg: "OKdnt", tag: "no se puede crear", code: 401 });
-          } else {
-            res.status(200);
-            res.json({ msg: "OK", code: 200 });
-          }
+        var result = await comentario.create(data);
+        if (result === null) {
+          res.status(401);
+          res.json({ msg: "ERROR", tag: "No se pudo comentar", code: 401 });
         } else {
-          res.status(400);
-          res.json({
-            msg: "ERROR",
-            tag: "La persona no es un admin",
-            code: 400,
-          });
+          res.status(200);
+          res.json({ msg: "OK", code: 200 });
         }
       }
     } else {

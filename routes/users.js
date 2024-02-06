@@ -107,6 +107,7 @@ router.get("/admin/personas/get/:external", PersonaControl.obtener);
 router.post("/admin/persona/save", PersonaControl.guardar);
 router.post("/admin/persona/usuario/save", PersonaControl.guardarUsuario);
 router.put("/admin/personas/modificar/:external", PersonaControl.modificar);
+router.put("/persona/modificar/:external", PersonaControl.agregarInfoUsuario);
 //api de rol
 router.get("/admin/rol", rolControl.listar);
 router.post("/admin/rol/save", rolControl.guardar);

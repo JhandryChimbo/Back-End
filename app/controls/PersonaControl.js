@@ -42,7 +42,12 @@ class PersonaControl {
     });
     if (lista === undefined || lista == null) {
       res.status(404);
-      res.json({ msg: "Error", tag:"Usuario no encontrado",code: 404, datos: {} });
+      res.json({
+        msg: "Error",
+        tag: "Usuario no encontrado",
+        code: 404,
+        datos: {},
+      });
     } else {
       res.status(200);
       res.json({ msg: "OK", code: 200, datos: lista });
@@ -229,7 +234,11 @@ class PersonaControl {
             rolA.external_id = uuid.v4();
             await rolA.save();
             res.status(200);
-            res.json({ msg: "OK", tag: "Cuenta Creada Correctamente", code: 200 });
+            res.json({
+              msg: "OK",
+              tag: "Cuenta Creada Correctamente",
+              code: 200,
+            });
           }
         } catch (error) {
           if (transaction) await transaction.rollback();
@@ -324,6 +333,78 @@ class PersonaControl {
           code: 400,
         });
       }
+    } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+      res.status(500);
+      res.json({ msg: "ERROR", code: 500, error_msg: error.message });
+    }
+  }
+
+  async agregarInfoUsuario(req, res) {
+    // Obtener la persona a modificar
+    const external = req.params.external;
+
+    if (!external) {
+      res.status(400);
+      res.json({
+        msg: "ERROR",
+        tag: "Falta la persona a modificar, por favor ingresar su id",
+        code: 400,
+      });
+      return;
+    }
+
+    let transaction;
+    try {
+      // Iniciar transacción
+      transaction = await models.sequelize.transaction();
+
+      // Buscar la persona a modificar
+      let personaModificar = await persona.findOne({
+        where: { external_id: external },
+        include: [{ model: models.rol, as: "rol" }],
+        transaction,
+      });
+
+      // Verificar si la persona existe
+      if (!personaModificar) {
+        res.status(404);
+        res.json({ msg: "ERROR", tag: "Persona no encontrada", code: 404 });
+        return;
+      }
+
+      var uuid = require("uuid");
+      //var rolA = await rol.findOne({ where: { external_id: req.body.rol } });
+      // var rolA = await rol.findOne({ where: { nombre: req.body.rol } });
+
+      // Actualizar los campos si se proporcionan en la solicitud
+      if (
+        req.body.hasOwnProperty("nombres") &&
+        req.body.hasOwnProperty("apellidos") &&
+        req.body.hasOwnProperty("direccion") &&
+        req.body.hasOwnProperty("celular") &&
+        req.body.hasOwnProperty("fecha")
+      ) {
+        personaModificar.nombres = req.body.nombres;
+        personaModificar.apellidos = req.body.apellidos;
+        personaModificar.direccion = req.body.direccion;
+        personaModificar.celular = req.body.celular;
+        personaModificar.fecha_nacimiento = req.body.fecha;
+        personaModificar.external_id = uuid.v4();
+      } else {
+        res.status(400);
+        res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
+        return;
+      }
+
+      // Guardar los cambios y confirmar la transacción
+      await personaModificar.save({ transaction });
+      await transaction.commit();
+
+      res.status(200);
+      res.json({ msg: "OK", code: 200 });
     } catch (error) {
       if (transaction) {
         await transaction.rollback();
