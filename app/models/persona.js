@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
       //Primero el nombre de la clase y entre llaves sus atributos
       apellidos: { type: DataTypes.STRING(150), defaultValue: "NONE" },
       nombres: { type: DataTypes.STRING(150), defaultValue: "NONE" },
-      direccion: { type: DataTypes.STRING, defaultValue: "NONE" },
-      celular: { type: DataTypes.STRING(20), defaultValue: "NONE" },
-      fecha_nacimiento: DataTypes.DATEONLY ,
+      direccion: { type: DataTypes.STRING, defaultValue: null },
+      celular: { type: DataTypes.STRING(20), defaultValue: null },
+      fecha_nacimiento: DataTypes.DATEONLY,
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     },
     { freezeTableName: true }
@@ -17,8 +17,11 @@ module.exports = (sequelize, DataTypes) => {
   persona.associate = function (models) {
     persona.hasOne(models.cuenta, { foreignKey: "id_persona", as: "cuenta" });
     persona.belongsTo(models.rol, { foreignKey: "id_rol" });
-    persona.hasMany(models.anime, { foreignKey: "id_persona", as: "anime"});
-    persona.hasMany(models.comentario, { foreignKey: "id_persona", as: "comentario"});
+    persona.hasMany(models.anime, { foreignKey: "id_persona", as: "anime" });
+    persona.hasMany(models.comentario, {
+      foreignKey: "id_persona",
+      as: "comentario",
+    });
   };
   return persona;
 };

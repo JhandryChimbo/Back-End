@@ -7,7 +7,11 @@ class PersonaControl {
   async listar(req, res) {
     var lista = await persona.findAll({
       include: [
-        { model: models.cuenta, as: "cuenta", attributes: ["correo"] },
+        {
+          model: models.cuenta,
+          as: "cuenta",
+          attributes: ["correo", "estado"],
+        },
         { model: models.rol, as: "rol", attributes: ["nombre"] },
       ],
       attributes: [
@@ -28,7 +32,11 @@ class PersonaControl {
     var lista = await persona.findOne({
       where: { external_id: external },
       include: [
-        { model: models.cuenta, as: "cuenta", attributes: ["correo"] },
+        {
+          model: models.cuenta,
+          as: "cuenta",
+          attributes: ["correo", "estado"],
+        },
         { model: models.rol, as: "rol", attributes: ["nombre"] },
       ],
       attributes: [
@@ -109,6 +117,7 @@ class PersonaControl {
             cuenta: {
               correo: req.body.correo,
               clave: req.body.clave,
+              estado: true,
             },
           };
           let transaction = await models.sequelize.transaction();
@@ -218,6 +227,7 @@ class PersonaControl {
           cuenta: {
             correo: req.body.correo,
             clave: req.body.clave,
+            estado: true,
           },
         };
         let transaction = await models.sequelize.transaction();
@@ -260,7 +270,6 @@ class PersonaControl {
   }
 
   async modificar(req, res) {
-    // Obtener la persona a modificar
     const external = req.params.external;
 
     if (!external) {
@@ -275,17 +284,17 @@ class PersonaControl {
 
     let transaction;
     try {
-      // Iniciar transacción
       transaction = await models.sequelize.transaction();
 
-      // Buscar la persona a modificar
       let personaModificar = await persona.findOne({
         where: { external_id: external },
-        include: [{ model: models.rol, as: "rol" }],
+        include: [
+          { model: models.rol, as: "rol" },
+          { model: models.cuenta, as: "cuenta" },
+        ],
         transaction,
       });
 
-      // Verificar si la persona existe
       if (!personaModificar) {
         res.status(404);
         res.json({ msg: "ERROR", tag: "Persona no encontrada", code: 404 });
@@ -293,17 +302,17 @@ class PersonaControl {
       }
 
       var uuid = require("uuid");
-      //var rolA = await rol.findOne({ where: { external_id: req.body.rol } });
       var rolA = await rol.findOne({ where: { nombre: req.body.rol } });
 
-      if (rolA != undefined || rolA != null) {
-        // Actualizar los campos si se proporcionan en la solicitud
+      if (rolA) {
+        // Corregir la condición
         if (
           req.body.hasOwnProperty("nombres") &&
           req.body.hasOwnProperty("apellidos") &&
           req.body.hasOwnProperty("direccion") &&
           req.body.hasOwnProperty("celular") &&
           req.body.hasOwnProperty("fecha") &&
+          req.body.hasOwnProperty("estado") &&
           req.body.hasOwnProperty("rol")
         ) {
           personaModificar.nombres = req.body.nombres;
@@ -311,17 +320,18 @@ class PersonaControl {
           personaModificar.direccion = req.body.direccion;
           personaModificar.celular = req.body.celular;
           personaModificar.fecha_nacimiento = req.body.fecha;
-          (personaModificar.external_id = uuid.v4()),
-            (personaModificar.id_rol = rolA.id);
+          personaModificar.cuenta.estado = req.body.estado;
+          personaModificar.id_rol = rolA.id;
         } else {
           res.status(400);
           res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
           return;
         }
 
-        // Guardar los cambios y confirmar la transacción
         await personaModificar.save({ transaction });
+        await personaModificar.cuenta.save({ transaction });
         await transaction.commit();
+        console.log("Persona modificada", personaModificar.cuenta.estado);
 
         res.status(200);
         res.json({ msg: "OK", code: 200 });
@@ -342,8 +352,7 @@ class PersonaControl {
     }
   }
 
-  async agregarInfoUsuario(req, res) {
-    // Obtener la persona a modificar
+  async modificarUsuario(req, res) {
     const external = req.params.external;
 
     if (!external) {
@@ -379,7 +388,6 @@ class PersonaControl {
       //var rolA = await rol.findOne({ where: { external_id: req.body.rol } });
       // var rolA = await rol.findOne({ where: { nombre: req.body.rol } });
 
-      // Actualizar los campos si se proporcionan en la solicitud
       if (
         req.body.hasOwnProperty("nombres") &&
         req.body.hasOwnProperty("apellidos") &&
@@ -392,7 +400,8 @@ class PersonaControl {
         personaModificar.direccion = req.body.direccion;
         personaModificar.celular = req.body.celular;
         personaModificar.fecha_nacimiento = req.body.fecha;
-        personaModificar.external_id = uuid.v4();
+
+        // personaModificar.external_id = uuid.v4();
       } else {
         res.status(400);
         res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
@@ -402,6 +411,42 @@ class PersonaControl {
       // Guardar los cambios y confirmar la transacción
       await personaModificar.save({ transaction });
       await transaction.commit();
+
+      res.status(200);
+      res.json({ msg: "OK", code: 200 });
+    } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+      res.status(500);
+      res.json({ msg: "ERROR", code: 500, error_msg: error.message });
+    }
+  }
+
+  async banearUsuario(req, res) {
+    const external = req.params.external;
+    let transaction;
+    try {
+      transaction = await models.sequelize.transaction();
+
+      let personaModificar = await persona.findOne({
+        where: { external_id: external },
+        include: [{ model: models.cuenta, as: "cuenta" }],
+        transaction,
+      });
+
+      if (!personaModificar) {
+        res.status(404);
+        res.json({ msg: "ERROR", tag: "Persona no encontrada", code: 404 });
+        return;
+      }
+
+      personaModificar.cuenta.estado = false;
+
+      await personaModificar.save({ transaction });
+      await personaModificar.cuenta.save({ transaction });
+      await transaction.commit();
+      console.log("Persona modificada", personaModificar.cuenta.estado);
 
       res.status(200);
       res.json({ msg: "OK", code: 200 });

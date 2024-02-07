@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       correo: { type: DataTypes.STRING(100), unique: true },
       clave: { type: DataTypes.STRING(100), allowNull: false },
-      estado: { type: DataTypes.BOOLEAN, defaultValue: true },
+      estado: { type: DataTypes.BOOLEAN },
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     },
     { freezeTableName: true }

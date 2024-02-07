@@ -107,7 +107,14 @@ router.get("/admin/personas/get/:external", PersonaControl.obtener);
 router.post("/admin/persona/save", PersonaControl.guardar);
 router.post("/admin/persona/usuario/save", PersonaControl.guardarUsuario);
 router.put("/admin/personas/modificar/:external", PersonaControl.modificar);
-router.put("/persona/modificar/:external", PersonaControl.agregarInfoUsuario);
+router.put("/admin/personas/banear/:external", PersonaControl.banearUsuario);
+
+router.put(
+  "/personas/modificar/usuario/:external",
+  PersonaControl.modificarUsuario
+);
+
+
 //api de rol
 router.get("/admin/rol", rolControl.listar);
 router.post("/admin/rol/save", rolControl.guardar);
@@ -123,6 +130,9 @@ router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 router.get("/comentarios", comentarioControl.listar);
 router.get("/comentarios/get/:external", comentarioControl.obtener);
 router.post("/comentarios/save", comentarioControl.guardar);
-router.put("/admin/comentarios/modificar/:external", comentarioControl.modificar);
+router.put(
+  "/admin/comentarios/modificar/:external",
+  comentarioControl.modificar
+);
 
 module.exports = router;
