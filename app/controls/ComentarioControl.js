@@ -17,7 +17,7 @@ class ComentarioControl {
         {
           model: models.persona,
           as: "persona",
-          attributes: ["apellidos", "nombres"],
+          attributes: ["apellidos", "nombres", ["external_id", "id"]],
         },
       ],
       attributes: [
@@ -41,7 +41,7 @@ class ComentarioControl {
         {
           model: models.persona,
           as: "persona",
-          attributes: ["apellidos", "nombres"],
+          attributes: ["apellidos", "nombres", ["external_id", "id"]],
         },
       ],
       include: [
@@ -191,8 +191,99 @@ class ComentarioControl {
         ) {
           comentarioModificar.cuerpo = req.body.cuerpo;
           comentarioModificar.fecha = req.body.fecha;
-          comentarioModificar.longitud = req.body.latitud;
+          comentarioModificar.longitud = req.body.longitud;
+          comentarioModificar.latitud = req.body.latitud;
           comentarioModificar.estado = req.body.estado;
+          comentarioModificar.external_id = uuid.v4();
+        } else {
+          res.status(400);
+          res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
+          return;
+        }
+
+        // Guardar los cambios y confirmar la transacción
+        await comentarioModificar.save({ transaction });
+        await transaction.commit();
+
+        res.status(200);
+        res.json({ msg: "OK", code: 200 });
+      }
+    } catch (error) {
+      if (transaction) {
+        await transaction.rollback();
+      }
+      res.status(500);
+      res.json({ msg: "ERROR", code: 500, error_msg: error.message });
+    }
+  }
+
+  async modificarComentarioUsuario(req, res) {
+    // Obtener el comentario a modificar
+    const external = req.params.external;
+
+    if (!external) {
+      res.status(400);
+      res.json({
+        msg: "ERROR",
+        tag: "Falta el comentario a modificar, por favor ingresar su id",
+        code: 400,
+      });
+      return;
+    }
+
+    let transaction;
+    try {
+      // Iniciar transacción
+      transaction = await models.sequelize.transaction();
+
+      // Buscar el comentario a modificar
+      let comentarioModificar = await comentario.findOne({
+        where: { external_id: external },
+        include: [
+          {
+            model: models.anime,
+            as: "anime",
+            attributes: ["titulo", "fecha"],
+          },
+          {
+            model: models.persona,
+            as: "persona",
+            attributes: ["nombres", "apellidos"],
+          },
+        ],
+        transaction,
+      });
+
+      // Verificar si el anime existe
+      if (!comentarioModificar) {
+        res.status(404);
+        res.json({ msg: "ERROR", tag: "Comentario no encontrado", code: 404 });
+        return;
+      }
+
+      var uuid = require("uuid");
+      var perA = comentarioModificar.persona;
+      var animeA = comentarioModificar.anime;
+
+      if (!perA && !animeA) {
+        res.status(401);
+        res.json({
+          msg: "ERROR",
+          tag: "El admin o anime a buscar no existe",
+          code: 401,
+        });
+      } else {
+        // Actualizar los campos si se proporcionan en la solicitud
+        if (
+          req.body.hasOwnProperty("cuerpo") &&
+          req.body.hasOwnProperty("fecha") &&
+          req.body.hasOwnProperty("longitud") &&
+          req.body.hasOwnProperty("latitud")
+        ) {
+          comentarioModificar.cuerpo = req.body.cuerpo;
+          comentarioModificar.fecha = req.body.fecha;
+          comentarioModificar.longitud = req.body.longitud;
+          comentarioModificar.latitud = req.body.latitud;
           comentarioModificar.external_id = uuid.v4();
         } else {
           res.status(400);

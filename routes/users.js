@@ -114,7 +114,6 @@ router.put(
   PersonaControl.modificarUsuario
 );
 
-
 //api de rol
 router.get("/admin/rol", rolControl.listar);
 router.post("/admin/rol/save", rolControl.guardar);
@@ -133,6 +132,10 @@ router.post("/comentarios/save", comentarioControl.guardar);
 router.put(
   "/admin/comentarios/modificar/:external",
   comentarioControl.modificar
+);
+router.put(
+  "/comentarios/modificar/:external",
+  comentarioControl.modificarComentarioUsuario
 );
 
 module.exports = router;
