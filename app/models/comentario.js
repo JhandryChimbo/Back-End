@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       cuerpo: { type: DataTypes.TEXT, defaultValue: "NONE" },
       estado: { type: DataTypes.BOOLEAN },
-      fecha: { type: DataTypes.DATE },
+      fecha: { type: DataTypes.DATEONLY },
       longitud: {type: DataTypes.DOUBLE},
       latitud: {type: DataTypes.DOUBLE},
       external_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
