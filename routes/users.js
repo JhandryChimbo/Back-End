@@ -26,7 +26,7 @@ router.get("/", function (req, res, next) {
 //middleware
 const auth = function middleware(rolesPermitidos) {
   return async function (req, res, next) {
-    const token = req.headers["auto-token"];
+    const token = req.headers["anime-token"];
 
     if (token === undefined) {
       res.status(401);
@@ -55,8 +55,8 @@ const auth = function middleware(rolesPermitidos) {
             where: { external_id: decoded.external },
             include: [
               {
-                model: models.personal,
-                as: "personal",
+                model: models.persona,
+                as: "persona",
                 attributes: ["apellidos", "nombres", "id_rol"],
               },
             ],
@@ -71,10 +71,9 @@ const auth = function middleware(rolesPermitidos) {
           } else {
             //TODO Autorizacion
             const rolAux = await rol.findOne({
-              where: { id: aux.personal.id_rol },
+              where: { id: aux.persona.id_rol },
             });
             if (rolesPermitidos.includes(rolAux.nombre)) {
-              // El usuario tiene uno de los roles permitidos, se permite el acceso
               next();
             } else {
               res.status(403);
@@ -93,24 +92,31 @@ const auth = function middleware(rolesPermitidos) {
   };
 };
 
-const authAdminEditor = auth(["admin", "editor"]);
 const authAdmin = auth("admin");
-const authUsuario = auth("usuario");
-const authEditor = auth("editor");
+const authGlobal = auth(["admin", "editor", "usuario"]);
 
 //inicio sesion
 router.post("/login", cuentaControl.inicio_sesion);
 
 //api de personas
-router.get("/admin/personas", PersonaControl.listar);
-router.get("/admin/personas/get/:external", PersonaControl.obtener);
-router.post("/admin/persona/save", PersonaControl.guardar);
+router.get("/admin/personas", authAdmin, PersonaControl.listar);
+router.get("/admin/personas/get/:external", authGlobal, PersonaControl.obtener);
+router.post("/admin/persona/save", authAdmin, PersonaControl.guardar);
 router.post("/admin/persona/usuario/save", PersonaControl.guardarUsuario);
-router.put("/admin/personas/modificar/:external", PersonaControl.modificar);
-router.put("/admin/personas/banear/:external", PersonaControl.banearUsuario);
+router.put(
+  "/admin/personas/modificar/:external",
+  authGlobal,
+  PersonaControl.modificar
+);
+router.put(
+  "/admin/personas/banear/:external",
+  authAdmin,
+  PersonaControl.banearUsuario
+);
 
 router.put(
   "/personas/modificar/usuario/:external",
+  authGlobal,
   PersonaControl.modificarUsuario
 );
 
@@ -126,15 +132,17 @@ router.use("/images", express.static("public/images"));
 //router.post("/admin/animes/file/save", animeControl.guardarFoto);
 router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 //API DE COMENTARIO
-router.get("/comentarios", comentarioControl.listar);
-router.get("/comentarios/get/:external", comentarioControl.obtener);
-router.post("/comentarios/save", comentarioControl.guardar);
+router.get("/comentarios", authGlobal, comentarioControl.listar);
+router.get("/comentarios/get/:external", authGlobal, comentarioControl.obtener);
+router.post("/comentarios/save", authGlobal, comentarioControl.guardar);
 router.put(
   "/admin/comentarios/modificar/:external",
+  authAdmin,
   comentarioControl.modificar
 );
 router.put(
   "/comentarios/modificar/:external",
+  authGlobal,
   comentarioControl.modificarComentarioUsuario
 );
 

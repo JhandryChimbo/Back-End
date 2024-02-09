@@ -305,7 +305,6 @@ class PersonaControl {
       var rolA = await rol.findOne({ where: { nombre: req.body.rol } });
 
       if (rolA) {
-        // Corregir la condición
         if (
           req.body.hasOwnProperty("nombres") &&
           req.body.hasOwnProperty("apellidos") &&
@@ -441,7 +440,13 @@ class PersonaControl {
         return;
       }
 
-      personaModificar.cuenta.estado = false;
+      if (req.body.hasOwnProperty("estado")) {
+        personaModificar.cuenta.estado = req.body.estado;
+      } else {
+        res.status(400);
+        res.json({ msg: "ERROR", tag: "Faltan datos", code: 400 });
+        return;
+      }
 
       await personaModificar.save({ transaction });
       await personaModificar.cuenta.save({ transaction });
