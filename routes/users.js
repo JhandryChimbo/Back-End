@@ -94,6 +94,7 @@ const auth = function middleware(rolesPermitidos) {
 
 const authAdmin = auth("admin");
 const authGlobal = auth(["admin", "editor", "usuario"]);
+const authAdminEditor = auth(["admin", "editor"]);
 
 //inicio sesion
 router.post("/login", cuentaControl.inicio_sesion);
@@ -105,7 +106,7 @@ router.post("/admin/persona/save", authAdmin, PersonaControl.guardar);
 router.post("/admin/persona/usuario/save", PersonaControl.guardarUsuario);
 router.put(
   "/admin/personas/modificar/:external",
-  authGlobal,
+  authAdmin,
   PersonaControl.modificar
 );
 router.put(
@@ -121,15 +122,18 @@ router.put(
 );
 
 //api de rol
-router.get("/admin/rol", rolControl.listar);
-router.post("/admin/rol/save", rolControl.guardar);
+router.get("/admin/rol",authAdmin, rolControl.listar);
+router.post("/admin/rol/save",authAdmin, rolControl.guardar);
 //api de anime
-router.get("/animes", animeControl.listar);
-router.get("/animes/get/:external", animeControl.obtener);
-router.post("/admin/animes/save", animeControl.guardar);
-router.put("/admin/animes/modificar/:external", animeControl.modificar);
+router.get("/animes", authGlobal, animeControl.listar);
+router.get("/animes/get/:external", authGlobal, animeControl.obtener);
+router.post("/admin/animes/save", authAdminEditor, animeControl.guardar);
+router.put(
+  "/admin/animes/modificar/:external",
+  authAdminEditor,
+  animeControl.modificar
+);
 router.use("/images", express.static("public/images"));
-//router.post("/admin/animes/file/save", animeControl.guardarFoto);
 router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 //API DE COMENTARIO
 router.get("/comentarios", authGlobal, comentarioControl.listar);

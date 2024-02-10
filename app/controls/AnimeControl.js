@@ -58,7 +58,12 @@ class AnimeControl {
     });
     if (lista === undefined || lista == null) {
       res.status(404);
-      res.json({ msg: "Error", tag:"Anime no encontrado",code: 404, datos: {} });
+      res.json({
+        msg: "Error",
+        tag: "Anime no encontrado",
+        code: 404,
+        datos: {},
+      });
     } else {
       res.status(200);
       res.json({ msg: "OK", code: 200, datos: lista });
@@ -97,22 +102,14 @@ class AnimeControl {
           estado: true,
           archivo: "anime.png",
         };
-        if (perA.rol.nombre == "admin") {
-          var result = await anime.create(data);
-          if (result === null) {
-            res.status(401);
-            res.json({ msg: "OKdnt", tag: "no se puede crear", code: 401 });
-          } else {
-            res.status(200);
-            res.json({ msg: "OK", code: 200 });
-          }
+
+        var result = await anime.create(data);
+        if (result === null) {
+          res.status(401);
+          res.json({ msg: "OKdnt", tag: "no se puede crear", code: 401 });
         } else {
-          res.status(400);
-          res.json({
-            msg: "ERROR",
-            tag: "La persona no es un admin",
-            code: 400,
-          });
+          res.status(200);
+          res.json({ msg: "OK", code: 200 });
         }
       }
     } else {
