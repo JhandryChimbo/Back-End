@@ -100,7 +100,7 @@ const authAdminEditor = auth(["admin", "editor"]);
 router.post("/login", cuentaControl.inicio_sesion);
 
 //api de personas
-router.get("/admin/personas", authAdmin, PersonaControl.listar);
+router.get("/admin/personas", PersonaControl.listar);
 router.get("/admin/personas/get/:external", authGlobal, PersonaControl.obtener);
 router.post("/admin/persona/save", authAdmin, PersonaControl.guardar);
 router.post("/admin/persona/usuario/save", PersonaControl.guardarUsuario);
@@ -125,7 +125,7 @@ router.put(
 router.get("/admin/rol",authAdmin, rolControl.listar);
 router.post("/admin/rol/save",authAdmin, rolControl.guardar);
 //api de anime
-router.get("/animes", authGlobal, animeControl.listar);
+router.get("/animes", animeControl.listar);
 router.get("/animes/get/:external", authGlobal, animeControl.obtener);
 router.post("/admin/animes/save", authAdminEditor, animeControl.guardar);
 router.put(
@@ -138,7 +138,7 @@ router.post("/admin/animes/file/save/:external", animeControl.guardarFoto);
 //API DE COMENTARIO
 router.get("/comentarios", authGlobal, comentarioControl.listar);
 router.get("/comentarios/get/:external", authGlobal, comentarioControl.obtener);
-router.post("/comentarios/save", authGlobal, comentarioControl.guardar);
+router.post("/comentarios/save", comentarioControl.guardar);
 router.put(
   "/admin/comentarios/modificar/:external",
   authAdmin,
